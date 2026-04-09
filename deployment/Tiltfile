@@ -1,0 +1,57 @@
+# Cluster is managed via `make k3d-up` from the repo root.
+
+allow_k8s_contexts('k3d-uptime-dev')
+
+default_registry('k3d-uptime-dev-registry:9099')
+
+k8s_yaml([
+    'k8s/namespace.yaml',
+    'k8s/db.yaml',
+    'k8s/api.yaml',
+    'k8s/web.yaml',
+    'k8s/ingress.yaml',
+])
+
+docker_build(
+    'uptime-api',
+    context='../api',
+    dockerfile='../api/Dockerfile',
+    live_update=[
+        sync('../api/app', '/app/app'),
+        run(
+            'pip install -r /app/requirements.txt',
+            trigger=['../api/requirements.txt'],
+        ),
+    ],
+)
+
+docker_build(
+    'uptime-web',
+    context='../web',
+    dockerfile='../web/Dockerfile',
+    live_update=[
+        sync('../web/src', '/app/src'),
+        sync('../web/public', '/app/public'),
+        sync('../web/index.html', '/app/index.html'),
+    ],
+)
+
+k8s_resource(
+    'uptime-db',
+    port_forwards=['5432:5432'],
+    labels=['infra'],
+)
+
+k8s_resource(
+    'uptime-api',
+    port_forwards=['8000:8000'],
+    resource_deps=['uptime-db'],
+    labels=['backend'],
+)
+
+k8s_resource(
+    'uptime-web',
+    port_forwards=['5173:5173'],
+    resource_deps=['uptime-api'],
+    labels=['frontend'],
+)

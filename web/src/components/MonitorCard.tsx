@@ -2,13 +2,13 @@ import type { MonitorState } from '../types'
 
 interface Props {
   monitor: MonitorState
-  onRemove: (id: string) => void
-  onRefresh: (id: string, url: string) => void
+  onRemove: (id: number) => void
+  onRefresh: (id: number) => void
 }
 
-function formatAge(ts: number | null): string {
+function formatAge(ts: string | null): string {
   if (!ts) return 'never'
-  const secs = Math.floor((Date.now() - ts) / 1000)
+  const secs = Math.floor((Date.now() - new Date(ts).getTime()) / 1000)
   if (secs < 60) return `${secs}s ago`
   if (secs < 3600) return `${Math.floor(secs / 60)}m ago`
   return `${Math.floor(secs / 3600)}h ago`
@@ -20,7 +20,7 @@ function uptimePct(results: MonitorState['results']): string {
 }
 
 function avgMs(results: MonitorState['results']): string {
-  const times = results.flatMap(r => r.responseTime != null ? [r.responseTime] : [])
+  const times = results.flatMap(r => r.response_time != null ? [r.response_time] : [])
   if (!times.length) return '—'
   return Math.round(times.reduce((a, b) => a + b, 0) / times.length) + 'ms'
 }
@@ -44,7 +44,7 @@ export function MonitorCard({ monitor, onRemove, onRefresh }: Props) {
         <div className="card-actions">
           <button
             className="icon-btn"
-            onClick={() => onRefresh(monitor.id, monitor.url)}
+            onClick={() => onRefresh(monitor.id)}
             disabled={monitor.checking}
             title="Check now"
             aria-label="Check now"
@@ -76,13 +76,13 @@ export function MonitorCard({ monitor, onRemove, onRefresh }: Props) {
           <span className="stat-label">Status</span>
           <span className={`stat-value status-text ${status}`}>
             {status === 'pending' ? '—' : status === 'up' ? 'Up' : 'Down'}
-            {latest?.httpStatus != null ? ` · ${latest.httpStatus}` : ''}
+            {latest?.http_status != null ? ` · ${latest.http_status}` : ''}
           </span>
         </div>
         <div className="stat">
           <span className="stat-label">Latency</span>
           <span className="stat-value">
-            {latest?.responseTime != null ? `${latest.responseTime}ms` : '—'}
+            {latest?.response_time != null ? `${latest.response_time}ms` : '—'}
           </span>
         </div>
         <div className="stat">
@@ -104,7 +104,7 @@ export function MonitorCard({ monitor, onRemove, onRefresh }: Props) {
               className={`history-block ${result == null ? 'empty' : result.ok ? 'up' : 'down'}`}
               title={
                 result
-                  ? `${result.ok ? '✓' : '✗'} ${new Date(result.timestamp).toLocaleTimeString()}${result.responseTime != null ? ` · ${result.responseTime}ms` : ''}`
+                  ? `${new Date(result.timestamp).toLocaleTimeString()}${result.response_time != null ? ` · ${result.response_time}ms` : ''}`
                   : ''
               }
             />
@@ -113,7 +113,7 @@ export function MonitorCard({ monitor, onRemove, onRefresh }: Props) {
       </div>
 
       <div className="card-footer">
-        <span>Checked {formatAge(monitor.lastChecked)}</span>
+        <span>Checked {formatAge(latest?.timestamp ?? null)}</span>
         <span>Every {intervalLabel(monitor.interval)}</span>
       </div>
     </div>

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uptime-web
+  namespace: uptime
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uptime-web
+  template:
+    metadata:
+      labels:
+        app: uptime-web
+    spec:
+      containers:
+        - name: web
+          image: uptime-web
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5173
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uptime-web
+  namespace: uptime
+spec:
+  selector:
+    app: uptime-web
+  ports:
+    - port: 5173
+      targetPort: 5173

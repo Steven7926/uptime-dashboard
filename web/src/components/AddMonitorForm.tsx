@@ -22,8 +22,7 @@ export function AddMonitorForm({ onAdd }: Props) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim() || !url.trim()) 
-      return
+    if (!name.trim() || !url.trim()) return
     onAdd({ name: name.trim(), url: url.trim(), interval })
     setName('')
     setUrl('')

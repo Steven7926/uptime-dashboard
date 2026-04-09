@@ -4,7 +4,7 @@ import { AddMonitorForm } from './components/AddMonitorForm'
 import './styles/App.css'
 
 export default function App() {
-  const { monitors, addMonitor, removeMonitor, checkMonitor } = useMonitors()
+  const { monitors, addMonitor, removeMonitor, refreshMonitor } = useMonitors()
 
   const upCount = monitors.filter(m => m.results[0]?.ok === true).length
   const downCount = monitors.filter(m => m.results[0]?.ok === false).length
@@ -54,7 +54,7 @@ export default function App() {
                 key={monitor.id}
                 monitor={monitor}
                 onRemove={removeMonitor}
-                onRefresh={checkMonitor}
+                onRefresh={refreshMonitor}
               />
             ))}
           </div>

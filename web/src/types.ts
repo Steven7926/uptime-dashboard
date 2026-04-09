@@ -1,19 +1,20 @@
 export interface Monitor {
-  id: string
+  id: number
   name: string
   url: string
-  interval: number // ms between checks
+  interval: number // ms
 }
 
 export interface CheckResult {
-  timestamp: number
+  id: number
+  monitor_id: number
+  timestamp: string
   ok: boolean
-  responseTime: number | null
-  httpStatus: number | null
+  response_time: number | null  // ms
+  http_status: number | null
 }
 
 export interface MonitorState extends Monitor {
   results: CheckResult[]
-  lastChecked: number | null
   checking: boolean
 }
