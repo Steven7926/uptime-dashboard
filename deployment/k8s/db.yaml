@@ -50,7 +50,7 @@ spec:
               mountPath: /var/lib/postgresql/data
           readinessProbe:
             exec:
-              command: ["pg_isready", "-U", "uptime"]
+              command: ["pg_isready", "-U", "postgres"]
             initialDelaySeconds: 5
             periodSeconds: 5
             failureThreshold: 10

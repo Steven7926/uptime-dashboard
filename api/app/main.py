@@ -11,18 +11,27 @@ from . import models, schemas
 
 Base.metadata.create_all(bind=engine)
 
-async def _ping(url: str) -> tuple[bool, float | None, int | None]:
+async def _ping(
+    url: str,
+    query_params: str | None = None,
+) -> tuple[bool, float | None, int | None]:
     """Return (ok, response_time_ms, http_status). Never raises."""
     try:
+        params = {}
+        if query_params:
+            for pair in query_params.split("&"):
+                if "=" in pair:
+                    k, _, v = pair.partition("=")
+                    params[k.strip()] = v.strip()
         async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
             t0 = time.monotonic()
-            r = await client.get(url)
+            r = await client.get(url, params=params or None)
             return r.status_code < 400, round((time.monotonic() - t0) * 1000, 2), r.status_code
     except Exception:
         return False, None, None
 
-async def _do_check(monitor_id: int, url: str) -> None:
-    ok, response_time, http_status = await _ping(url)
+async def _do_check(monitor_id: int, url: str, query_params: str | None) -> None:
+    ok, response_time, http_status = await _ping(url, query_params)
 
     def _save() -> None:
         db = SessionLocal()
@@ -47,7 +56,7 @@ async def _scheduler() -> None:
         def _get_monitors() -> list[tuple[int, str, int]]:
             db = SessionLocal()
             try:
-                return [(m.id, m.url, m.interval) for m in db.query(models.Monitor).all()]
+                return [(m.id, m.url, m.interval, m.query_params) for m in db.query(models.Monitor).all()]
             finally:
                 db.close()
 
@@ -55,11 +64,11 @@ async def _scheduler() -> None:
         now = time.monotonic()
 
         due = [
-            _do_check(mid, url)
-            for mid, url, interval_ms in monitors
+            _do_check(mid, url, qp)
+            for mid, url, interval_ms, qp in monitors
             if (now - last_checked.get(mid, 0)) * 1000 >= interval_ms
         ]
-        for mid, _, interval_ms in monitors:
+        for mid, _, interval_ms, _qp in monitors:
             if (now - last_checked.get(mid, 0)) * 1000 >= interval_ms:
                 last_checked[mid] = now
 
@@ -127,7 +136,7 @@ async def check_monitor(monitor_id: int, db: Session = Depends(get_db)):
     if not monitor:
         raise HTTPException(status_code=404, detail="Monitor not found")
 
-    ok, response_time, http_status = await _ping(monitor.url)
+    ok, response_time, http_status = await _ping(monitor.url, monitor.query_params)
 
     result = models.CheckResult(
         monitor_id=monitor_id,

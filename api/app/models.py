@@ -10,6 +10,7 @@ class Monitor(Base):
     name = Column(String, nullable=False)
     url = Column(String, nullable=False)
     interval = Column(Integer, default=60000)  # milliseconds, matches frontend
+    query_params = Column(String, nullable=True)   # raw query string, e.g. "foo=bar&baz=qux"
 
     results = relationship("CheckResult", back_populates="monitor", cascade="all, delete-orphan")
 

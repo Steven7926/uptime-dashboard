@@ -3,6 +3,7 @@ export interface Monitor {
   name: string
   url: string
   interval: number // ms
+  query_params?: string
 }
 
 export interface CheckResult {

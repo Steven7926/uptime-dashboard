@@ -19,15 +19,33 @@ export function AddMonitorForm({ onAdd }: Props) {
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
   const [interval, setInterval] = useState(60_000)
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [queryParams, setQueryParams] = useState('')
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim() || !url.trim()) return
-    onAdd({ name: name.trim(), url: url.trim(), interval })
+    onAdd({
+      name: name.trim(),
+      url: url.trim(),
+      interval,
+      query_params: queryParams.trim() || undefined,
+    })
     setName('')
     setUrl('')
     setInterval(60_000)
+    setQueryParams('')
+    setShowAdvanced(false)
     setOpen(false)
+  }
+
+  function handleCancel() {
+    setOpen(false)
+    setShowAdvanced(false)
+    setName('')
+    setUrl('')
+    setInterval(60_000)
+    setQueryParams('')
   }
 
   if (!open) {
@@ -71,8 +89,30 @@ export function AddMonitorForm({ onAdd }: Props) {
           </select>
         </label>
       </div>
+
+      <button
+        type="button"
+        className="advanced-toggle"
+        onClick={() => setShowAdvanced(v => !v)}
+      >
+        {showAdvanced ? '▾' : '▸'} Advanced
+      </button>
+
+      {showAdvanced && (
+        <div className="form-fields">
+          <label className="form-field" style={{ gridColumn: 'span 3' }}>
+            <span>Query parameters</span>
+            <input
+              value={queryParams}
+              onChange={e => setQueryParams(e.target.value)}
+              placeholder="key=value&key2=value2"
+            />
+          </label>
+        </div>
+      )}
+
       <div className="form-actions">
-        <button type="button" onClick={() => setOpen(false)}>Cancel</button>
+        <button type="button" onClick={handleCancel}>Cancel</button>
         <button type="submit" className="primary">Add Monitor</button>
       </div>
     </form>

@@ -16,12 +16,14 @@ class MonitorCreate(BaseModel):
     name: str
     url: str
     interval: int = 60000  # ms
+    query_params: Optional[str] = None
 
 class MonitorOut(BaseModel):
     id: int
     name: str
     url: str
     interval: int
+    query_params: Optional[str] = None
     results: list[CheckResultOut] = []
 
     model_config = {"from_attributes": True}

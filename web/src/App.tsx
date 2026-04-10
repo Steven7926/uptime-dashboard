@@ -14,7 +14,8 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <div className="header-brand">
-          <h1>Uptime</h1>
+          <h1>IDST Uptime Monitor</h1>
+          <span>A simple uptime monitoring dashboard to see the state of IDST application across all three networks</span>
           {monitors.length > 0 && (
             <span className={`overall-badge ${allUp ? 'up' : 'down'}`}>
               {allUp ? 'All systems operational' : `${downCount} service${downCount !== 1 ? 's' : ''} down`}

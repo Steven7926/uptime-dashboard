@@ -336,6 +336,22 @@
   font-size: 18px;
 }
 
+.advanced-toggle {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+
+  &:hover {
+    color: var(--text-h);
+  }
+}
+
 .form-fields {
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
